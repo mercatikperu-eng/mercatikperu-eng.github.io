@@ -1,1 +1,329 @@
-https://script.google.com/macros/s/AKfycbxFZcY7sOfEyUTqIYj2LovK9jVbeo1KYUTJ7wG1UeqD_KrHZlhpB1yTsL0aac7gOZA9/exec
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b5d47">
+<title>MERCATIK</title>
+<meta name="description" content="Catálogo de productos MERCATIK.">
+<meta property="og:title" content="MERCATIK">
+<meta property="og:description" content="Catálogo de productos MERCATIK.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<style>
+  :root { --verde:#0b5d47; --sobre-verde:#ffffff; --fondo:#f5f7f6; --tarjeta:#ffffff; --texto:#15201b; --suave:#5a6963; --borde:#dbe3df; }
+  @media (prefers-color-scheme: dark) {
+    :root { --verde:#45c39a; --sobre-verde:#062419; --fondo:#0e1412; --tarjeta:#151d1a; --texto:#e8eeeb; --suave:#9aa9a2; --borde:#27332e; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--fondo); color: var(--texto); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+         display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .caja { width: 100%; max-width: 360px; text-align: center; }
+  .marca { font-weight: 800; letter-spacing: .14em; font-size: 20px; color: var(--verde); }
+  .rueda { width: 34px; height: 34px; margin: 22px auto 14px; border-radius: 50%;
+           border: 3px solid var(--borde); border-top-color: var(--verde); animation: girar .8s linear infinite; }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .rueda { animation-duration: 2.4s; } }
+  .suave { color: var(--suave); font-size: 14px; margin: 0; }
+  .aviso { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 14px; padding: 20px; margin-top: 18px; text-align: left; }
+  .aviso h1 { font-size: 17px; line-height: 1.3; margin: 0 0 6px; }
+  .aviso p { margin: 0 0 14px; font-size: 14px; color: var(--suave); }
+  .aviso button { width: 100%; border: 0; border-radius: 10px; padding: 12px; font: inherit; font-weight: 600; font-size: 15px;
+                  background: var(--verde); color: var(--sobre-verde); cursor: pointer; }
+  .detalle { font-size: 12px; color: var(--suave); margin-top: 12px; word-break: break-word; }
+</style>
+</head>
+<body>
+<main class="caja" id="caja" aria-live="polite">
+  <div class="marca">MERCATIK</div>
+  <div class="rueda" role="progressbar" aria-label="Cargando"></div>
+  <p class="suave">Cargando tienda…</p>
+</main>
+
+<script>
+/* =================================================================
+   ÚNICO DATO QUE DEBES CAMBIAR:
+   el link de tu Apps Script (el que termina en /exec), entre comillas.
+   ================================================================= */
+var URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxFZcY7sOfEyUTqIYj2LovK9jVbeo1KYUTJ7wG1UeqD_KrHZlhpB1yTsL0aac7gOZA9/exec';
+</script>
+
+<script>
+/* MERCATIK · carga tu tienda de Apps Script sin usar la sesión de Google,
+   para que abra aunque el celular o la laptop tengan varias cuentas. */
+(function () {
+  'use strict';
+
+  var API = String(window.URL_APPS_SCRIPT || '').trim()
+    .replace(/\/macros\/u\/\d+\/s\//, '/macros/s/')
+    .replace(/[?#].*$/, '');
+  var AQUI = location.origin + location.pathname;
+  var caja = document.getElementById('caja');
+
+  function texto(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function mostrarAviso(titulo, mensaje, detalle, conBoton) {
+    caja.innerHTML =
+      '<div class="marca">MERCATIK</div>' +
+      '<div class="aviso" role="alert"><h1>' + texto(titulo) + '</h1><p>' + texto(mensaje) + '</p>' +
+      (conBoton ? '<button type="button" id="reintentar">Reintentar</button>' : '') +
+      (detalle ? '<div class="detalle">' + texto(detalle) + '</div>' : '') + '</div>';
+    var b = document.getElementById('reintentar');
+    if (b) b.onclick = function () { location.reload(); };
+  }
+
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(API)) {
+    mostrarAviso('Falta un dato', 'Pega en index.html el link de tu Apps Script (el que termina en /exec).',
+      'Valor actual: ' + (window.URL_APPS_SCRIPT || '(vacío)'), false);
+    return;
+  }
+
+  /* ---- Esto se instala dentro de tu tienda: reemplaza a google.script.run ---- */
+  function instalarPuente(cfg) {
+    var API = cfg.api;
+    var AQUI = cfg.aqui;
+    var id = (API.match(/\/macros\/s\/([\w-]+)\/exec/) || [])[1];
+    var patron = id ? new RegExp('https://script\\.google\\.com/macros/(?:u/\\d+/)?s/' + id + '/exec', 'g') : null;
+    var patronCod = id ? new RegExp('https%3A%2F%2Fscript\\.google\\.com%2Fmacros%2F(?:u%2F\\d+%2F)?s%2F' + id + '%2Fexec', 'gi') : null;
+    var aquiCod = encodeURIComponent(AQUI);
+
+    function reescribir(v) {
+      if (!patron) return v;
+      if (typeof v === 'string') return v.replace(patron, AQUI).replace(patronCod, aquiCod);
+      if (Array.isArray(v)) return v.map(reescribir);
+      if (v && typeof v === 'object') {
+        var o = {};
+        Object.keys(v).forEach(function (k) { o[k] = reescribir(v[k]); });
+        return o;
+      }
+      return v;
+    }
+
+    function enviar(cuerpo) {
+      return fetch(API, { method: 'POST', body: JSON.stringify(cuerpo), credentials: 'omit' })
+        .then(function (r) { return r.text(); })
+        .then(function (t) {
+          try { return JSON.parse(t); } catch (e) { throw new Error('Respuesta no válida del servidor.'); }
+        });
+    }
+
+    function leerArchivo(archivo) {
+      return new Promise(function (ok, mal) {
+        var lector = new FileReader();
+        lector.onload = function () {
+          var s = String(lector.result || '');
+          ok({ __puenteArchivo: true, nombre: archivo.name || '', tipo: archivo.type || 'application/octet-stream',
+               datos: s.slice(s.indexOf(',') + 1) });
+        };
+        lector.onerror = function () { mal(lector.error || new Error('No se pudo leer el archivo.')); };
+        lector.readAsDataURL(archivo);
+      });
+    }
+
+    function esFormulario(x) {
+      return !!x && typeof x === 'object' && typeof x.tagName === 'string' && x.tagName.toUpperCase() === 'FORM';
+    }
+
+    function leerFormulario(form) {
+      var pares = [];
+      Array.prototype.forEach.call(form.elements, function (el) {
+        var nombre = el.name;
+        var tipo = String(el.type || '').toLowerCase();
+        var etiqueta = String(el.tagName || '').toUpperCase();
+        if (!nombre || el.disabled) return;
+        if (etiqueta === 'FIELDSET' || etiqueta === 'OBJECT' || etiqueta === 'OUTPUT') return;
+        if (/^(submit|button|reset|image)$/.test(tipo)) return;
+        if ((tipo === 'checkbox' || tipo === 'radio') && !el.checked) return;
+        if (tipo === 'file') {
+          var lista = Array.prototype.slice.call(el.files || []);
+          if (!lista.length) {
+            pares.push([nombre, { __puenteArchivo: true, nombre: '', tipo: 'application/octet-stream', datos: '' }]);
+          }
+          lista.forEach(function (f) { pares.push([nombre, leerArchivo(f)]); });
+          return;
+        }
+        if (etiqueta === 'SELECT' && el.multiple) {
+          Array.prototype.forEach.call(el.options, function (o) { if (o.selected) pares.push([nombre, o.value]); });
+          return;
+        }
+        pares.push([nombre, el.value]);
+      });
+      return Promise.all(pares.map(function (p) { return p[1]; })).then(function (valores) {
+        var mapa = {};
+        pares.forEach(function (p, i) { (mapa[p[0]] = mapa[p[0]] || []).push(valores[i]); });
+        var datos = {};
+        Object.keys(mapa).forEach(function (k) { datos[k] = mapa[k].length === 1 ? mapa[k][0] : mapa[k]; });
+        return datos;
+      });
+    }
+
+    function ejecutar(nombre, args, op) {
+      function fallar(error) {
+        var e = new Error((error && error.message) || String(error || 'Error'));
+        e.name = (error && error.name) || 'Error';
+        setTimeout(function () {
+          if (op.fallo) op.fallo(e, op.usuario);
+          else if (window.console) console.error(e);
+        }, 0);
+      }
+      Promise.all(args.map(function (a) { return esFormulario(a) ? leerFormulario(a) : a; }))
+        .then(function (listos) { return enviar({ accion: 'ejecutar', fn: nombre, args: listos }); })
+        .then(function (r) {
+          if (r && r.ok) {
+            var dato = reescribir(r.data);
+            setTimeout(function () { if (op.exito) op.exito(dato, op.usuario); }, 0);
+          } else {
+            fallar(r && r.error);
+          }
+        }, function (err) {
+          var m = String((err && err.message) || err);
+          fallar({ name: 'NetworkError', message: /fetch|network|load failed/i.test(m)
+            ? 'No se pudo conectar con la tienda. Revisa tu internet e inténtalo de nuevo.' : m });
+        });
+    }
+
+    function unir(a, b) {
+      var o = {};
+      Object.keys(a).forEach(function (k) { o[k] = a[k]; });
+      Object.keys(b).forEach(function (k) { o[k] = b[k]; });
+      return o;
+    }
+
+    var noLlamables = { then: 1, toJSON: 1, toString: 1, valueOf: 1, constructor: 1 };
+    function crearRunner(op) {
+      return new Proxy({}, {
+        get: function (_, prop) {
+          if (typeof prop !== 'string' || noLlamables[prop]) return undefined;
+          if (prop === 'withSuccessHandler') return function (f) { return crearRunner(unir(op, { exito: f })); };
+          if (prop === 'withFailureHandler') return function (f) { return crearRunner(unir(op, { fallo: f })); };
+          if (prop === 'withUserObject') return function (o) { return crearRunner(unir(op, { usuario: o })); };
+          return function () { ejecutar(prop, Array.prototype.slice.call(arguments), op); };
+        }
+      });
+    }
+
+    function ubicacion() {
+      var parameter = {}, parameters = {};
+      new URLSearchParams(location.search).forEach(function (v, k) {
+        (parameters[k] = parameters[k] || []).push(v);
+        if (!Object.prototype.hasOwnProperty.call(parameter, k)) parameter[k] = v;
+      });
+      return { hash: location.hash.replace(/^#/, ''), parameter: parameter, parameters: parameters };
+    }
+
+    function armarUrl(params, hash) {
+      var u = new URL(location.href);
+      if (params && typeof params === 'object') {
+        var q = new URLSearchParams();
+        Object.keys(params).forEach(function (k) {
+          [].concat(params[k]).forEach(function (v) { q.append(k, v); });
+        });
+        u.search = q.toString();
+      }
+      if (hash !== undefined && hash !== null) u.hash = String(hash);
+      return u.toString();
+    }
+
+    var g = window.google = window.google || {};
+    g.script = {
+      run: crearRunner({}),
+      url: {
+        getLocation: function (cb) { var l = ubicacion(); setTimeout(function () { cb(l); }, 0); }
+      },
+      history: {
+        push: function (estado, params, hash) { history.pushState(estado === undefined ? null : estado, '', armarUrl(params, hash)); },
+        replace: function (estado, params, hash) { history.replaceState(estado === undefined ? null : estado, '', armarUrl(params, hash)); },
+        setChangeHandler: function (fn) {
+          window.addEventListener('popstate', function (ev) { fn({ state: ev.state, location: ubicacion() }); });
+        }
+      },
+      host: {
+        origin: location.origin,
+        close: function () { try { window.close(); } catch (e) {} },
+        setHeight: function () {},
+        setWidth: function () {},
+        editor: { focus: function () {} }
+      }
+    };
+  }
+
+  var cfg = { api: API, aqui: AQUI };
+  var id = API.match(/\/macros\/s\/([\w-]+)\/exec/)[1];
+  var patron = new RegExp('https://script\\.google\\.com/macros/(?:u/\\d+/)?s/' + id + '/exec', 'g');
+  var patronCod = new RegExp('https%3A%2F%2Fscript\\.google\\.com%2Fmacros%2F(?:u%2F\\d+%2F)?s%2F' + id + '%2Fexec', 'gi');
+
+  function insertar(html, extra) {
+    var marcas = [/<head(?:\s[^>]*)?>/i, /<html(?:\s[^>]*)?>/i, /<!doctype[^>]*>/i];
+    for (var i = 0; i < marcas.length; i++) {
+      var m = marcas[i].exec(html);
+      if (m) return html.slice(0, m.index + m[0].length) + extra + html.slice(m.index + m[0].length);
+    }
+    return extra + html;
+  }
+
+  function escribir(d) {
+    var html = String(d.html || '').replace(patron, AQUI).replace(patronCod, encodeURIComponent(AQUI));
+    var extra = '<script>(' + instalarPuente.toString() + ')(' +
+      JSON.stringify(cfg).replace(/</g, '\\u003c') + ');<\/script>';
+    if (!/<meta[^>]+name\s*=\s*["']?viewport/i.test(html)) {
+      extra += '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    }
+    if (d.titulo) {
+      html = html.replace(/<title[^>]*>[\s\S]*?<\/title>/i, '');
+      extra += '<title>' + texto(d.titulo) + '</title>';
+    } else if (!/<title[^>]*>/i.test(html)) {
+      extra += '<title>MERCATIK</title>';
+    }
+    if (d.favicon && !/<link[^>]+rel\s*=\s*["']?(?:shortcut\s+)?icon/i.test(html)) {
+      extra += '<link rel="icon" href="' + texto(d.favicon) + '">';
+    }
+    html = insertar(html, extra);
+    if (!/^\s*<!doctype/i.test(html)) html = '<!DOCTYPE html>' + html;
+    document.open();
+    document.write(html);
+    document.close();
+  }
+
+  function parametros() {
+    var p = {};
+    new URLSearchParams(location.search).forEach(function (v, k) { (p[k] = p[k] || []).push(v); });
+    return p;
+  }
+
+  var reloj;
+  new Promise(function (ok, mal) {
+    reloj = setTimeout(function () { mal(new Error('El servidor tardó demasiado en responder.')); }, 60000);
+    fetch(API, { method: 'POST', body: JSON.stringify({ accion: 'pagina', params: parametros() }), credentials: 'omit' })
+      .then(function (r) {
+        if (!r.ok) throw new Error('El servidor respondió ' + r.status + '.');
+        return r.text();
+      })
+      .then(ok, mal);
+  })
+    .then(function (t) {
+      clearTimeout(reloj);
+      var r;
+      try { r = JSON.parse(t); } catch (e) { throw new Error('Respuesta no válida del servidor.'); }
+      if (!r || !r.ok) throw new Error((r && r.error && r.error.message) || 'Error desconocido.');
+      escribir(r.data || {});
+    })
+    .catch(function (err) {
+      clearTimeout(reloj);
+      var m = String((err && err.message) || err);
+      var red = /failed to fetch|networkerror|load failed|network request failed/i.test(m);
+      mostrarAviso('No se pudo abrir la tienda',
+        red ? 'Revisa tu conexión a internet e inténtalo de nuevo.' : 'Inténtalo de nuevo en un momento.',
+        'Detalle: ' + m + (red ? ' · Si eres el dueño, revisa que el archivo Puente esté guardado, que hiciste "Nueva versión" y que el acceso sea "Cualquier usuario".' : ''),
+        true);
+    });
+})();
+</script>
+</body>
+</html>
+
